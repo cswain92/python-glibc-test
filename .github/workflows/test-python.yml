@@ -8,10 +8,31 @@ jobs:
   not_working:
     runs-on: ubuntu-latest
     container:
-      # Use 'bookworm' (Debian 12), which has GLIBC 2.38 preinstalled
       image: python:3.10-bookworm
     steps:
-      - uses: actions/setup-python@v5
+      - name: Install Dependencies
+        run: |
+          apt-get update && apt-get install -y wget curl build-essential
+
+      - name: Install GLIBC 2.38
+        run: |
+          GLIBC_VERSION=2.38
+          wget http://ftp.gnu.org/gnu/libc/glibc-${GLIBC_VERSION}.tar.gz
+          tar -xvzf glibc-${GLIBC_VERSION}.tar.gz
+          cd glibc-${GLIBC_VERSION}
+          mkdir build
+          cd build
+          ../configure --prefix=/opt/glibc-${GLIBC_VERSION}
+          make -j$(nproc)
+          make install
+          echo "/opt/glibc-${GLIBC_VERSION}/lib" > /etc/ld.so.conf.d/glibc-${GLIBC_VERSION}.conf
+          ldconfig
+          export LD_LIBRARY_PATH=/opt/glibc-${GLIBC_VERSION}/lib:$LD_LIBRARY_PATH
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - run: python
+
+      - name: Verify Python
+        run: python --version
