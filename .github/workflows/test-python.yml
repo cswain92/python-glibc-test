@@ -10,22 +10,30 @@ jobs:
     container:
       image: python:3.10-slim
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y wget curl ca-certificates
+          apt-get update && apt-get install -y \
+          build-essential manpages-dev gawk bison wget curl \
+          binutils gcc libc-dev make python3-dev
 
-      - name: Install Precompiled glibc 2.38
+      - name: Download and Compile glibc 2.38
         run: |
-          wget -q -O /tmp/glibc-2.38.tar.gz https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.38-r0/glibc-2.38-r0.apk
-          tar -xvzf /tmp/glibc-2.38.tar.gz -C /opt
-          echo "/opt/glibc-2.38/lib" > /etc/ld.so.conf.d/glibc-2.38.conf
-          ldconfig
-          export LD_LIBRARY_PATH=/opt/glibc-2.38/lib:$LD_LIBRARY_PATH
+          wget http://ftp.gnu.org/gnu/libc/glibc-2.38.tar.gz
+          tar -xvzf glibc-2.38.tar.gz
+          cd glibc-2.38
+          mkdir build
+          cd build
+          ../configure --prefix=/opt/glibc-2.38
+          make -j$(nproc)
+          make install
 
-      - name: Verify glibc version
+      - name: Update glibc Paths
+        run: |
+          echo "/opt/glibc-2.38/lib" > /etc/ld.so.conf.d/glibc-2.38.conf
+          export LD_LIBRARY_PATH=/opt/glibc-2.38/lib:$LD_LIBRARY_PATH
+          ldconfig
+
+      - name: Verify glibc Version
         run: ldd --version
 
       - name: Run Python
