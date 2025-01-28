@@ -10,29 +10,9 @@ jobs:
     container:
       image: python:3.10-bookworm
     steps:
-      - name: Install Dependencies
-        run: |
-          apt-get update && apt-get install -y wget curl build-essential
-
-      - name: Install GLIBC 2.38
-        run: |
-          GLIBC_VERSION=2.38
-          wget http://ftp.gnu.org/gnu/libc/glibc-${GLIBC_VERSION}.tar.gz
-          tar -xvzf glibc-${GLIBC_VERSION}.tar.gz
-          cd glibc-${GLIBC_VERSION}
-          mkdir build
-          cd build
-          ../configure --prefix=/opt/glibc-${GLIBC_VERSION}
-          make -j$(nproc)
-          make install
-          echo "/opt/glibc-${GLIBC_VERSION}/lib" > /etc/ld.so.conf.d/glibc-${GLIBC_VERSION}.conf
-          ldconfig
-          export LD_LIBRARY_PATH=/opt/glibc-${GLIBC_VERSION}/lib:$LD_LIBRARY_PATH
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Verify Python
+      - name: Verify Python Version
         run: python --version
+
+      - name: Run Python Commands
+        run: |
+          python -c "print('Hello, GLIBC 2.38!')"
