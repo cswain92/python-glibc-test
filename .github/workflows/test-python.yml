@@ -12,7 +12,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y wget build-essential
+          apt-get update
+          apt-get install -y wget build-essential gawk bison make
           wget http://ftp.gnu.org/gnu/libc/glibc-2.38.tar.gz
           tar -xvzf glibc-2.38.tar.gz
           cd glibc-2.38 && mkdir build && cd build
