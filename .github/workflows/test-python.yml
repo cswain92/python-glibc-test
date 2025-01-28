@@ -15,4 +15,4 @@ jobs:
 
       - name: Run Python Commands
         run: |
-          python -c "print('Hello, GLIBC 2.38!')"
+          python -c "import subprocess; print(subprocess.check_output(['ldd', '--version']).decode())"
