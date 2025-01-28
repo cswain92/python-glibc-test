@@ -3,7 +3,7 @@ name: Debug
 on:
   workflow_dispatch:
   push:
-  
+
 jobs:
   not_working:
     runs-on: ubuntu-latest
@@ -15,27 +15,18 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y wget build-essential gawk bison make
+          apt-get update && apt-get install -y wget curl ca-certificates
 
-          # Download and build glibc 2.38
-          wget http://ftp.gnu.org/gnu/libc/glibc-2.38.tar.gz
-          tar -xvzf glibc-2.38.tar.gz
-          cd glibc-2.38
-          mkdir build && cd build
-          ../configure --prefix=/opt/glibc-2.38
-          make -j$(nproc)
-          make install
-
-          # Update LD_LIBRARY_PATH to include new glibc
+      - name: Install Precompiled glibc 2.38
+        run: |
+          wget -q -O /tmp/glibc-2.38.tar.gz https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.38-r0/glibc-2.38-r0.apk
+          tar -xvzf /tmp/glibc-2.38.tar.gz -C /opt
           echo "/opt/glibc-2.38/lib" > /etc/ld.so.conf.d/glibc-2.38.conf
           ldconfig
           export LD_LIBRARY_PATH=/opt/glibc-2.38/lib:$LD_LIBRARY_PATH
 
       - name: Verify glibc version
-        run: |
-          ldd --version
+        run: ldd --version
 
       - name: Run Python
-        run: |
-          python --version
+        run: python --version
